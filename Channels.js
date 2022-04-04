@@ -1,0 +1,425 @@
+import React, { useState, useEffect } from 'react';
+import { BottomSheet, Button, ListItem } from 'react-native-elements';
+import {
+  StyleSheet,
+  View,
+  Text,
+  SectionList,
+  Image,
+  TextInput,
+  Linking,
+  ScrollView,
+  FlatList,
+  Pressable,
+} from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import Constants from 'expo-constants';
+
+import { Ionicons } from '@expo/vector-icons';
+
+import { Video } from 'expo-av';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import {
+  faCheckSquare,
+  faCoffee,
+  faBars,
+} from '@fortawesome/fontawesome-free-solid';
+
+import {
+  NavigationContainer,
+  DefaultTheme,
+  useRoute,
+  useNavigation,
+} from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { FontAwesome } from '@expo/vector-icons';
+
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { Entypo } from '@expo/vector-icons';
+
+import { MaterialIcons } from '@expo/vector-icons';
+
+import { SimpleLineIcons } from '@expo/vector-icons';
+
+import { Feather as Icon } from '@expo/vector-icons';
+
+import { AppLoading } from 'expo';
+
+import { useFonts, OpenSans_400Regular } from '@expo-google-fonts/dev';
+
+import { PermanentMarker_400Regular } from '@expo-google-fonts/permanent-marker';
+
+import {
+  Teko_300Light,
+  Teko_400Regular,
+  Teko_500Medium,
+  Teko_600SemiBold, 
+  Teko_700Bold,
+} from '@expo-google-fonts/teko';
+
+
+function Channels({ navigation }) {
+  let [fontsLoaded, error] = useFonts({
+    PermanentMarker_400Regular,
+    Teko_600SemiBold,
+  });
+
+  const video = React.useRef(null);
+  const route = useRoute();
+
+  const [channelUploads, setChannelUploads] = useState();
+
+  return (
+    <View style={styles.page}>
+      <View style={styles.profile}>
+        <View>
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              marginRight: 'auto',
+              marginLeft: 'auto',
+            }}>
+            <Image
+              source={{
+                uri: route.params.channelavatar,
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+              }}
+            />
+          </View>
+          <Text
+            style={{
+              fontSize: '20px',
+              color: '#fdfbf9',
+              fontFamily: 'Teko_600SemiBold',
+              letterSpacing: '0.02rem',
+              marginRight: 'auto',
+              marginLeft: 'auto',
+            }}>
+            {route.params.channelname}
+          </Text>
+        </View>
+        <Text
+          style={{
+            fontSize: '16px',
+            color: '#fdfbf9',
+            fontFamily: 'Teko_600SemiBold',
+            letterSpacing: '0.02rem',
+            marginRight: 'auto',
+            marginLeft: 'auto',
+          }}>
+          1,000,000 Subscribers
+        </Text>
+        <View
+          style={{
+            borderColor: '#0c1559',
+            borderWidth: 3,
+            width: 120,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+          }}>
+          <Text
+            style={{
+              fontSize: '16px',
+              color: '#fdfbf9',
+              fontFamily: 'Teko_600SemiBold',
+              letterSpacing: '0.02rem',
+            }}>
+            Subscribe
+          </Text>
+        </View>
+      </View>
+      <>
+        <View styles={styles.uploads}>
+          <ScrollView>
+            {channelUploads && channelUploads.length === 0 && (
+              <Text style={styles.message}>
+                No uploads.
+              </Text>
+            )}
+            {channelUploads && channelUploads.length > 0
+              ? channelUploads.map((channelUploads) => {
+                  return (
+                    <View style={styles.movieCard}>
+                      <Video
+                        style={styles.video}
+                        ref={video}
+                        source={{
+                          uri: channelUploads.videofile,
+                        }}
+                        posterSource={{
+                          uri: channelUploads.videothumbnail,
+                        }}
+                        resizeMode={'cover'}
+                        usePoster
+                        posterStyle={{ width: '100%', height: '100%' }}
+                        isMuted></Video>
+                      <View className="controls" style={styles.controls}>
+                        <View
+                          className="controls-two"
+                          style={styles.controlsTwo}>
+                          <View className="channel" style={styles.channel}>
+                            <View
+                              className="avi"
+                              style={{
+                                width: 65,
+                                height: 65,
+                                marginLeft: 2,
+                                backgroundColor: 'black',
+                                borderRadius: '50%',
+                                shadowColor: 'black',
+                                shadowRadius: 10,
+                                shadowOpacity: 1,
+                                shadowOffset: { width: -2, height: 4 },
+                                marginRight: 5,
+                              }}>
+                              <Image
+                                source={{
+                                  uri: channelUploads.profile_avatar,
+                                }}
+                                style={{
+                                  width: 60,
+                                  height: 60,
+                                  borderRadius: '50%',
+                                  zIndex: 20,
+                                }}
+                              />
+                            </View>
+                            <View
+                              style={{
+                                width: '90%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                marginRight: 15,
+                              }}>
+                              <Text style={styles.viewName}>
+                                {channelUploads.channel_name}
+                              </Text>
+                              <Text style={styles.viewText}>
+                                Views: {channelUploads.videoviewcount}{' '}
+                              </Text>
+                            </View>
+
+                            <View className="edits" style={styles.edits}>
+                              <FontAwesome
+                                name="ellipsis-v"
+                                size={24}
+                                color="#fdfbf9"
+                                style={styles.editsBtn}
+                              />
+                              <FlatList
+                                className="edit-options"
+                                style={styles.editOptions}>
+                                //{' '}
+                                <Button className="edits2-add">
+                                  <MaterialIcons
+                                    name="watch-later"
+                                    size={24}
+                                    color="#fdfbf9"
+                                  />
+                                </Button>
+                                data={[{ key: 'Watchlater' }]}
+                                />
+                              </FlatList>
+                            </View>
+                          </View>
+                        </View>
+                        <Pressable
+                          onPress={() =>
+                            navigation.navigate('Theater', {
+                              videoid: channelUploads.videoid,
+                              videotitle: channelUploads.videotitle,
+                              videodescription: channelUploads.videodescription,
+                              videofile: channelUploads.videofile,
+                              videothumbnail: channelUploads.videothumbnail,
+                              videocreator: channelUploads.channel_name,
+                              creatoravatar: channelUploads.channelpic,
+                              videoviewcount: channelUploads.videoviewcount,
+                              videolikecount: channelUploads.videolikecount,
+                              videodislikecount:
+                                channelUploads.videodislikecount,
+                              channelid: channelUploads.channelid,
+                            })
+                          }
+                          style={styles.buttonOpen}>
+                          <FontAwesome
+                            name="play"
+                            size={24}
+                            color="#0c1559"
+                            style={styles.play}
+                          />
+                        </Pressable>
+                        <View className="movie-info">
+                          <Text style={styles.cardTextTitle}>
+                            {channelUploads.videotitle}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })
+              : null}
+          </ScrollView>
+        </View>
+      </>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  page: {
+    backgroundColor: '#171717',
+    fontFamily: 'Teko_600SemiBold',
+  },
+  profile: {
+    height: 200,
+    width: '100%',
+    backgroundColor: '#171717',
+    shadowColor: 'black',
+    shadowRadius: 10,
+    shadowOpacity: 1,
+    shadowOffset: { width: -2, height: 4 },
+    padding: 10,
+    margin: 10,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  uploads: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#171717',
+    width: '100%',
+    height: '100%',
+    padding: 10,
+  },
+
+  movieCard: {
+    height: 250,
+    width: 390,
+    backgroundColor: '#171717',
+    shadowColor: '#0c1559',
+    shadowRadius: 10,
+    shadowOpacity: 1,
+    shadowOffset: { width: -2, height: 4 },
+    borderRadius: '10px',
+    fontFamily: 'Teko_700Bold',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+
+  play: {
+    display: 'block',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    marginTop: '30px',
+    background: 'transparent',
+    width: '50px',
+    height: '50px',
+    border: 'none',
+    borderRadius: '5px',
+    fontSize: '50px',
+    color: '#001399',
+    textAlign: 'center',
+  },
+
+  cardTextTitle: {
+    color: '#fdfbf9',
+    fontFamily: 'Teko_700Bold',
+    letterSpacing: '0.02rem',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+
+  channel: {
+    display: 'flex',
+    flexDirection: 'row',
+    margin: '5px',
+    width: 250,
+  },
+
+  edits: {
+    width: 40,
+    height: 80,
+    position: 'relative',
+    right: 0,
+    top: 0,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+
+  editsBtn: {
+    width: '40px',
+    position: 'relative',
+  },
+
+  editOptions: {
+    position: 'relative',
+    zIndex: 15,
+    width: 120,
+    height: 60,
+    backgroundColor: '#0c1559',
+    borderRadius: '10px',
+    color: '#fdfbf9',
+    right: 100,
+    transform: [{ scale: 0 }],
+  },
+
+  viewText: {
+    color: '#fdfbf9',
+    fontFamily: 'Teko_700Bold',
+    letterSpacing: '0.02rem',
+    marginTop: 10,
+    marginLeft: 5,
+    fontSize: 14,
+  },
+
+  viewName: {
+    color: '#fdfbf9',
+    fontFamily: 'Teko_700Bold',
+    letterSpacing: '0.02rem',
+    marginLeft: 5,
+    fontSize: 18,
+  },
+
+  video: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: '10px',
+  },
+
+  controlsTwo: {
+    height: '65px',
+    display: 'flex',
+    flexDirection: 'row',
+    padding: 5,
+    marginBottom: 5,
+  },
+
+  controls: {
+    position: 'relative',
+    padding: 5,
+    zIndex: 10,
+    backgroundColor: 'rgba(19, 19, 19, 0.7)',
+    width: '100%',
+    height: '100%',
+  },
+});
+
+export default Channels;

@@ -45,6 +45,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
 import { viewsConversion } from './Conversion'
+import Logo from './Logo'
 
 const Profile = () => {
   const video = React.useRef(null);
@@ -562,6 +563,7 @@ const CustomHeader = (props) => {
   const logoutUser = async () => {
     const keys = await AsyncStorage.getAllKeys();
     await AsyncStorage.multiRemove(keys);
+    navigation.navigate('Logo')
   };
 
   const onLogOut = () => {
